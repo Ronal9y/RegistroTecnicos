@@ -1,0 +1,111 @@
+﻿@page "/Tecnico/Index"
+@using RegistroTecnicos.Models
+@using RegistroTecnicos.Services
+@inject TecnicoService tecnicoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Técnicos</PageTitle>
+
+<div class="card shadow">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Consulta de Técnicos</h3>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="ID">TécnicoId</option>
+                <option value="Nombres">Nombres</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Tecnico/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>TécnicoId</th>
+                <th>Nombres</th>
+                <th>Sueldo por Hora</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Listar != null && Listar.Count > 0)
+            {
+                @foreach (var tecnico in Listar)
+                {
+                    <tr>
+                        <td>@tecnico.TecnicoId</td>
+                        <td>@tecnico.Nombres</td>
+                        <td>@string.Format("{0:N2}",tecnico.SueldoHora)</td>
+
+                        <td>
+                            <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-success">
+                                <i class="bi bi-pencil-square fs-4 me-3"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/Tecnico/Delete/@tecnico.TecnicoId" class="btn btn-danger">
+                                <i class="bi bi-trash-fill fs-4 me-3"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5">No se encontraron resultados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="card-footer text-end">
+        <p>Total de Técnicos:@Listar.Count</p>
+    </div>
+</div>
+
+@code {
+    public List<Tecnicos> Listar { get; set; } = new List<Tecnicos>();
+    public string filtro { get; set; } = "ID";
+    public string valorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Listar = await tecnicoService.Listar(t => true);
+    }
+
+    public async Task Buscar()
+    {
+        if (string.IsNullOrEmpty(valorFiltro))
+        {
+            Listar = await tecnicoService.Listar(P => true);
+        }
+        else if (filtro == "ID" && int.TryParse(valorFiltro, out int tecnicoId))
+        {
+            Listar = await tecnicoService.Listar(t => t.TecnicoId == tecnicoId);
+        }
+        else if (filtro == "Nombres")
+        {
+            Listar = await tecnicoService.Listar(t => t.Nombres.Contains(valorFiltro, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+}
