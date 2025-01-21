@@ -5,23 +5,23 @@
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-<PageTitle>Consulta de Técnicos</PageTitle>
+<PageTitle>Consulta de T&eacute;cnicos</PageTitle>
 
 <div class="card shadow">
     <div class="card-header bg-white text-center text-white py-3 rounded">
-        <h3 class="font-weight-bold text-black">Consulta de Técnicos</h3>
+        <h3 class="font-weight-bold text-black">Consulta de T&eacute;cnicos</h3>
     </div>
 
     <div class="row mb-3 align-items-center px-3">
         <div class="col-md-3">
             <label for="Filtro" class="form-label">Filtrar por:</label>
             <select class="form-select" @bind="filtro">
-                <option value="ID">TécnicoId</option>
+                <option value="ID">T&eacute;cnicoId</option>
                 <option value="Nombres">Nombres</option>
             </select>
         </div>
         <div class="col-md-6">
-            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
             <div class="input-group">
                 <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
                 <button class="btn btn-primary" type="button" @onclick="Buscar">
@@ -39,7 +39,7 @@
     <table class="table table-bordered text-center">
         <thead>
             <tr>
-                <th>TécnicoId</th>
+                <th>T&eacute;cnicoId</th>
                 <th>Nombres</th>
                 <th>Sueldo por Hora</th>
                 <th>Editar</th>
@@ -57,13 +57,13 @@
                         <td>@string.Format("{0:N2}",tecnico.SueldoHora)</td>
 
                         <td>
-                            <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-success">
-                                <i class="bi bi-pencil-square fs-4 me-3"></i>
+                            <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-success">
+                                <i class="bi bi-pencil-square fs-4"></i>
                             </a>
                         </td>
                         <td>
-                            <a href="/Tecnico/Delete/@tecnico.TecnicoId" class="btn btn-danger">
-                                <i class="bi bi-trash-fill fs-4 me-3"></i>
+                            <a href="/Tecnico/Delete/@tecnico.TecnicoId" class="btn btn-outline-danger">
+                                <i class="bi bi-trash-fill fs-4"></i>
                             </a>
                         </td>
                     </tr>
@@ -79,7 +79,7 @@
     </table>
 
     <div class="card-footer text-end">
-        <p>Total de Técnicos:@Listar.Count</p>
+        <p>Total de T&eacute;cnicos:@Listar.Count</p>
     </div>
 </div>
 
@@ -105,7 +105,8 @@
         }
         else if (filtro == "Nombres")
         {
-            Listar = await tecnicoService.Listar(t => t.Nombres.Contains(valorFiltro, StringComparison.OrdinalIgnoreCase));
+             var tecnicos = await tecnicoService.Buscar(nombre: valorFiltro);
+             Listar = tecnicos != null ? new List<Tecnicos> { tecnicos } :new List<Tecnicos>();
         }
     }
 }
