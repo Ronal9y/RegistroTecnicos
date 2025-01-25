@@ -1,0 +1,120 @@
+﻿@page "/Cliente/Index"
+@inject ClienteService clienteService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Clientes</PageTitle>
+
+<div class="card shadow">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Consulta de Clientes</h3>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="ID">ClienteId</option>
+                <option value="Nombres">Nombres</option>
+                <option value="Rnc">Rnc</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Cliente/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>ClienteId</th>
+                <th>Nombres</th>
+                <th>Fecha de ingreso</th>
+                <th>Direccion</th>
+                <th>Rnc</th>
+                <th>Limite de credito</th>
+                <th>Tecnico</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var cliente in ListarClientes)
+            {
+                <tr>
+                    <td>@cliente.ClienteId</td>
+                    <td>@cliente.ClienteNombres</td>
+                    <td>@cliente.FechaIngreso.ToShortDateString()</td>
+                    <td>@cliente.Direccion</td>
+                    <td>@cliente.Rnc</td>
+                    <td>@string.Format("{0:N2}",cliente.LimiteCredito)</td>
+                    <td>@cliente.TecnicoId - @cliente.tecnico?.Nombres</td>
+
+
+                    <td>
+                        <a href="/Cliente/Edit/@cliente.ClienteId" class="btn btn-outline-success">
+                            <i class="bi bi-pencil-square fs-4"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/Cliente/Delete/@cliente.ClienteId" class="btn btn-outline-danger">
+                            <i class="bi bi-trash-fill fs-4"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+    <div class="card-footer text-end">
+        <p>Total de Clientes:@ListarClientes.Count</p>
+    </div>
+</div>
+
+@code {
+
+    public Clientes Clientes { get; set; } = new Clientes();
+    public List<Clientes> ListarClientes { get; set; } = new List<Clientes>();
+    public string filtro = "ID";
+    public string valorFiltro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListarClientes = await clienteService.Listar(c => true);
+    }
+
+    public async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(valorFiltro))
+        {
+            ListarClientes = await clienteService.Listar(P => true);
+        }
+        else {
+            if (filtro == "ID" && int.TryParse(valorFiltro, out int clienteId))
+            {
+                ListarClientes = await clienteService.Listar(c => c.ClienteId == clienteId);
+            }
+            else if (filtro == "Nombres")
+            {
+                ListarClientes = await clienteService.Listar(c => c.ClienteNombres.Contains(valorFiltro));
+            }
+            else if (filtro == "Rnc")
+            {
+                ListarClientes = await clienteService.Listar(c => c.Rnc.Contains(valorFiltro));
+            }
+        }
+    }
+}
