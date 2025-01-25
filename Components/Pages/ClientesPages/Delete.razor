@@ -1,0 +1,105 @@
+﻿@page "/Cliente/Delete/{ClienteId:int}"
+@inject ClienteService clienteService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar Cliente</PageTitle>
+
+<div class="container">
+    <div class="card shadow-header">
+        <div class=" bg-primary text-white text-center py-2 rounded">
+            <h3><strong>Eliminar Cliente</strong></h3>
+        </div>
+
+        <div class="card-header text-center">
+            <h3 class="text-danger">¿Est&aacute; seguro de eliminar este cliente?</h3>
+        </div>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow-lg">
+                        <div card-header>
+                            <h3 class="text-center"><strong>Datos del Cliente</strong></h3>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="border-primary border-2 borde">
+                                <div card-body>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <ul class="list-unstyled">
+                                                <li><strong>ClienteId:</strong> @clientes.ClienteId</li>
+                                                <li><strong>Nombres:</strong> @clientes.ClienteNombres</li>
+                                                <li><strong>FechaIngreso:</strong> @clientes.FechaIngreso</li>
+                                                <li><strong>Direccion:</strong> @clientes.Direccion</li>
+                                                <li><strong>Rnc:</strong> @clientes.Rnc</li>
+                                                <li><strong>LimiteCredito:</strong> @clientes.LimiteCredito</li>
+                                                <li><strong>ID del t&eacute;cnico encargado:</strong> @clientes.TecnicoId</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-danger" @onclick="EliminarCliente"><i class="bi bi-trash-fill"></i>Eliminar</button>
+                <button type="button" class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i>Volver</button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@if (clientes == null)
+{
+    <p>Cliente no encontrado</p>
+}
+
+@code {
+
+    [Parameter]
+    public int ClienteId { get; set; }
+
+    public Clientes? clientes { get; set; } = new Clientes();
+
+    public bool existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (ClienteId != 0)
+        {
+            clientes = await clienteService.Buscar(ClienteId);
+            if (clientes != null)
+            {
+                var tipo = await clienteService.Buscar(ClienteId);
+            }
+        }
+    }
+
+    public async Task EliminarCliente()
+    {
+
+        if (ClienteId == 0 || clientes == null)
+        {
+            return;
+        }
+
+        if (await clienteService.Eliminar(ClienteId))
+        {
+            Volver();
+        }
+
+    }
+
+    public async Task Volver()
+    {
+        navigationManager.NavigateTo("/Cliente/Index");
+    }
+}

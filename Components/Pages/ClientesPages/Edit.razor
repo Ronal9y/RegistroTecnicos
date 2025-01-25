@@ -1,0 +1,151 @@
+﻿@page "/Cliente/Edit/{ClienteId:int}"
+@inject ClienteService clienteService
+@inject TecnicoService tecnicoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="clientes" OninValidSubmit="Guardar">
+    <DataAnnotationsValidator/>
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Modificar Cliente</h3>
+    </div>
+
+    <div class="card-body">
+
+        @*ClienteId*@
+        <div class="mb-3">
+            <label for="ClienteId" class="form-label">ClienteId:</label>
+            <InputNumber @bind-Value="clientes.ClienteId" class="form-control" />
+        </div>
+        
+        @*Nombres*@
+        <div class="mb-3">
+            <label for="ClienteNombre" class="form-label">ClienteNombre:</label>
+            <InputText @bind-Value="clientes.ClienteNombres" class="form-control"/>
+            <ValidationMessage For="@(()=>clientes.ClienteNombres)" />
+        </div>
+
+        @*FechaIngreso*@
+        <div class="mb-3">
+            <label for="FechaIngreso" class="form-label">FechaIngreso:</label>
+            <InputDate @bind-Value="clientes.FechaIngreso" class="form-control"/>
+        </div>
+
+        @*Direccion*@
+        <div class="mb-3">
+            <label for="Direccion" class="form-label">Direccion:</label>
+            <InputText @bind-Value="clientes.Direccion" class="form-control" />
+        </div>
+
+        @*Rnc*@
+        <div class="mb-3">
+            <label for="Rnc" class="form-label">Rnc:</label>
+            <InputText @bind-Value="clientes.Rnc" class="form-control" />
+            <ValidationMessage For="@(()=>clientes.Rnc)" />
+        </div>
+
+        @*LimiteCredito*@
+        <div class="mb-3">
+            <label for="LimiteCredito" class="form-label">LimiteCredito:</label>
+            <InputNumber @bind-Value="clientes.LimiteCredito" class="form-control" />
+        </div>
+
+        @*TecnicoId*@
+        <div class="mb-3">
+            <label for="TecnicoId" class="form-label">TecnicoId:</label>
+            <InputSelect @bind-Value="clientes.TecnicoId" class="form-control">
+                <option value="">Seleccione un t&eacute;cnico</option>
+                @foreach (var tecnico in tecnicoId)
+                {
+                    <option value="@tecnico.TecnicoId">@tecnico.TecnicoId</option>
+                }
+            </InputSelect>
+        </div>
+
+    </div>
+           
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+
+        </div>
+
+    </div>
+        
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int ClienteId { get; set; }
+
+    public Clientes clientes { get; set; } = new Clientes();
+
+    public List<Tecnicos> tecnicoId { get; set; } = new List<Tecnicos>();
+
+    public bool existe = false;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //    clientes = await clienteService.Buscar(ClienteId);
+    // }
+    protected override async Task OnInitializedAsync()
+    {
+
+        tecnicoId = await tecnicoService.Listar(c => true);
+
+    }
+    public async Task Buscar()
+    {
+
+        existe = false;
+        var ClienteEncontrado = await clienteService.Buscar(ClienteId);
+        if (ClienteEncontrado != null)
+        {
+            clientes = ClienteEncontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task Nuevo()
+    {
+        clientes = new Clientes();
+
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaClientes = await clienteService.Listar(c => c.ClienteNombres.ToLower() == clientes.ClienteNombres.ToLower() && c.ClienteId != clientes.ClienteId && c.Rnc != clientes.Rnc);
+        existe = listaClientes.Any();
+        return !existe;
+    }
+
+    public async Task Retroceder()
+    {
+        navigationManager.NavigateTo("/Cliente/Index");
+    }
+
+    public async Task Guardar()
+    {
+        if (!await Validar())
+        {
+
+            return;
+        }
+
+        var resultado = await clienteService.Guardar(clientes);
+        if (resultado)
+        {
+
+            await Retroceder();
+        }
+
+    }
+
+}
