@@ -5,23 +5,23 @@
 namespace RegistroTecnicos.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Ciudades : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Tecnicos",
+                name: "Ciudades",
                 columns: table => new
                 {
-                    TecnicoId = table.Column<int>(type: "int", nullable: false)
+                    CiudadId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombres = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SueldoHora = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    NombreCiudad = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DireccionCiudad = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tecnicos", x => x.TecnicoId);
+                    table.PrimaryKey("PK_Ciudades", x => x.CiudadId);
                 });
         }
 
@@ -29,7 +29,7 @@ namespace RegistroTecnicos.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Tecnicos");
+                name: "Ciudades");
         }
     }
 }

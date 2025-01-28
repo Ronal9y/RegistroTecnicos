@@ -1,0 +1,133 @@
+﻿@page "/Ciudad/Create"
+@inject CiudadService ciudadService
+@inject TecnicoService tecnicoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="ciudades" OninValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Modificar Ciudad</h3>
+    </div>
+
+    <div class="card-body">
+
+        @*CiuadadId*@
+        <div class="mb-3">
+            <label for="CiudadId" class="form-label">CiuadadId:</label>
+            <InputNumber @bind-Value="ciudades.CiudadId" class="form-control" />
+        </div>
+
+        @*Nombres*@
+        <div class="mb-3">
+            <label for="ClienteNombre" class="form-label">ClienteNombre:</label>
+            <InputText @bind-Value="ciudades.NombreCiudad" class="form-control" />
+            <ValidationMessage For="@(()=>ciudades.NombreCiudad)" />
+        </div>
+
+        @*Direccion*@
+        <div class="mb-3">
+            <label for="Direccion" class="form-label">Direccion:</label>
+            <InputText @bind-Value="ciudades.DireccionCiudad" class="form-control" />
+        </div>
+
+    </div>
+
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int CiudadId { get; set; }
+
+    public Ciudades ciudades { get; set; } = new Ciudades();
+
+    private bool existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (ciudades.CiudadId > 0)
+        {
+            var existente = await ciudadService.Buscar(ciudades.CiudadId);
+            ciudades = existente ?? new();
+        }
+
+    }
+
+    public async Task Nuevo()
+    {
+
+        ciudades = new Ciudades();
+        existe = false;
+
+    }
+
+    public async Task Buscar()
+    {
+
+        existe = false;
+
+        var encontrado = await ciudadService.Buscar(ciudades.CiudadId);
+
+        if (encontrado != null)
+        {
+
+            ciudades = encontrado;
+
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task<bool> Validar()
+    {
+
+        existe = await ciudadService.ExisteNombreCliente(ciudades.NombreCiudad, ciudades.CiudadId);
+
+        return existe;
+    }
+
+
+    public async Task Guardar()
+    {
+        if (await Validar())
+        {
+
+            return;
+        }
+        var guardado = await ciudadService.Guardar(ciudades);
+        if (guardado)
+        {
+            Nuevo();
+            Retroceder();
+
+        }
+    }
+
+
+    public async Task Retroceder()
+    {
+        navigationManager.NavigateTo("/Ciudad/Index");
+    }
+
+    public async Task Eliminar()
+    {
+        var eliminado = await ciudadService.Eliminar(ciudades.CiudadId);
+        Nuevo();
+    }
+
+}
