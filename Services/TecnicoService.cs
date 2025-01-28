@@ -56,19 +56,28 @@ public class TecnicoService(IDbContextFactory<Contexto> DbFactory)
         }
     }
 
-    public async Task<Tecnicos?> Buscar(int id)
+    public async Task<Tecnicos?> Buscar(int id=0, string? nombre=null)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
-        return await contexto.Tecnicos.AsNoTracking().
+        if (id > 0)
+        {
+            return await contexto.Tecnicos.AsNoTracking().
             FirstOrDefaultAsync(t => t.TecnicoId==id);
+        }
+        else if(!string.IsNullOrEmpty(nombre))
+        {
+            return await contexto.Tecnicos.AsNoTracking().
+            FirstOrDefaultAsync(t => t.Nombres.ToLower().Equals(nombre.ToLower()));
+        }
+        return null;
     }
 
     public async Task<bool> ExisteNombreTecnico(string nombre, int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
-        return await contexto.Tecnicos.AnyAsync(t => t.Nombres.ToLower().Equals(nombre.ToLower()) &&t.TecnicoId == id);
+        return await contexto.Tecnicos.AnyAsync(t => t.Nombres.ToLower().Equals(nombre.ToLower()) && t.TecnicoId == id);
     }
 
     public async Task<List<Tecnicos>> Listar(Expression<Func<Tecnicos, bool>>? filtro = null)
@@ -81,6 +90,9 @@ public class TecnicoService(IDbContextFactory<Contexto> DbFactory)
         return await contexto.Tecnicos.AsNoTracking().ToListAsync();
     }
 
-
+    public async Task <List<Tecnicos>> ListarTecnicos()
+    {
+        await using var contexto= await DbFactory.CreateDbContextAsync();
+        return await contexto.Tecnicos.AsNoTracking().ToListAsync();
+    }
 }
-

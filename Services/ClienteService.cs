@@ -74,21 +74,21 @@ namespace RegistroTecnicos.Services;
         return null;
     }
 
-    public async Task<bool> ExisteNombreCliente(string rnc,string nombre, int id)
+    public async Task<bool> ExisteNombreCliente(string rnc, string nombre, int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        return await contexto.Clientes.AnyAsync(c => c.Rnc.ToLower().Equals(rnc.ToLower())||c.ClienteNombres.ToLower().Equals(nombre.ToLower()) && c.ClienteId == id);
+        return await contexto.Clientes.AnyAsync(c =>
+            (c.Rnc == rnc || c.ClienteNombres == nombre) &&
+            c.ClienteId != id
+        );
     }
 
-    public async Task<List<Clientes>> Listar(Expression<Func<Clientes, bool>>? filtro = null)
+    public async Task<List<Clientes>> Listar(Expression<Func<Clientes, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
-        if (filtro != null)
-            return await contexto.Clientes.AsNoTracking().Where(filtro).ToListAsync();
-
-        return await contexto.Clientes.AsNoTracking().ToListAsync();
+         return await contexto.Clientes.AsNoTracking().Include(c =>c.tecnico).Where(criterio).ToListAsync();
+            
     }
 
     public async Task<List<Clientes>> ListarClientes()
@@ -97,15 +97,18 @@ namespace RegistroTecnicos.Services;
         return await contexto.Clientes.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Clientes>BuscarNombre(string nombre)
+    public async Task<Clientes?> Buscar(string criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        if (string.IsNullOrWhiteSpace(nombre)) 
+
+        if (int.TryParse(criterio, out int id))
         {
-            return null;
+            return await contexto.Clientes
+                .FirstOrDefaultAsync(c => c.ClienteId == id);
         }
-        var cliente = await contexto.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.ClienteNombres.ToLower().Equals(nombre.ToLower()));
-        return cliente;
+
+        return await contexto.Clientes
+            .FirstOrDefaultAsync(c => c.Rnc == criterio || c.ClienteNombres.Contains(criterio));
     }
 
 }

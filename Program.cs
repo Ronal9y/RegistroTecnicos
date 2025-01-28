@@ -19,6 +19,8 @@ namespace RegistroTecnicos
             builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
 
             builder.Services.AddScoped<TecnicoService>();
+            builder.Services.AddScoped<ClienteService>();
+            builder.Services.AddScoped<CiudadService>();
             builder.Services.AddBlazorBootstrap();
 
             var app = builder.Build();

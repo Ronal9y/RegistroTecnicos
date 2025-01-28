@@ -6,16 +6,23 @@ public class Clientes
 {
     [Key]
     public int ClienteId { get; set; }
+
     [Required(ErrorMessage = "Este campo es obligatorio")]
-    public string? Nombre { get; set; }
+    public string? ClienteNombres { get; set; }
+
     [Required(ErrorMessage = "Este campo es obligatorio")]
-    public string? FechaIngreso { get; set; }
+    [DataType(DataType.Date)]
+    public DateTime FechaIngreso { get; set; }
     public string? Direccion { get; set; }
+
     [Required(ErrorMessage = "Este campo es obligatorio")]
+    [MaxLength(10,ErrorMessage ="El RNC no puede exceder de los 10 digitos")]
     public string? Rnc { get; set; }
+
     [Required(ErrorMessage = "Este campo es obligatorio")]
-    public string? LimiteCredito { get; set; }
+    public decimal? LimiteCredito { get; set; }
 
     [ForeignKey("Tecnicos")]
     public int TecnicoId { get; set; }
+    public Tecnicos? tecnico { get; set; }
 }
