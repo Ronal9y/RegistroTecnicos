@@ -1,0 +1,108 @@
+﻿@page "/Ciudad/Index"
+@inject CiudadService ciudadService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Ciudades</PageTitle>
+
+<div class="card shadow">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Consulta de Ciuadades</h3>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="ID">CiuadaId</option>
+                <option value="Nombres">NombreCiudad</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Ciudad/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>CiudadId</th>
+                <th>NombreCiudad</th>
+                <th>Direccion</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var ciudades in ListarCiudades)
+            {
+                <tr>
+                    <td>@ciudades.CiudadId</td>
+                    <td>@ciudades.NombreCiudad</td>
+                    <td>@ciudades.DireccionCiudad</td>
+
+                    <td>
+                        <a href="/Ciudad/Edit/@ciudades.CiudadId" class="btn btn-outline-success">
+                            <i class="bi bi-pencil-square fs-4"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/Ciudad/Delete/@ciudades.CiudadId" class="btn btn-outline-danger">
+                            <i class="bi bi-trash-fill fs-4"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+    <div class="card-footer text-end">
+        <p>Total de Ciudades:@ListarCiudades.Count</p>
+    </div>
+</div>
+
+@code {
+
+    public Ciudades Ciudades { get; set; } = new Ciudades();
+    public List<Ciudades> ListarCiudades { get; set; } = new List<Ciudades>();
+    public string filtro = "ID";
+    public string valorFiltro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListarCiudades = await ciudadService.Listar(c => true);
+    }
+
+    public async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(valorFiltro))
+        {
+            ListarCiudades = await ciudadService.Listar(P => true);
+        }
+        else
+        {
+            if (filtro == "ID" && int.TryParse(valorFiltro, out int ciudadId))
+            {
+                ListarCiudades = await ciudadService.Listar(c => c.CiudadId == ciudadId);
+            }
+            else if (filtro == "Nombres")
+            {
+                ListarCiudades = await ciudadService.Listar(c => c.NombreCiudad.Contains(valorFiltro));
+            }
+            
+        }
+    }
+}
