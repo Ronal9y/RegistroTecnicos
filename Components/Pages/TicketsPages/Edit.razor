@@ -1,0 +1,167 @@
+﻿@page "/Ticket/Edit"
+@page "/Ticket/Edit/{TicketId:int}"
+@inject TicketService ticketService
+@inject ClienteService clienteService
+@inject TecnicoService tecnicoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="ticket" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Modificar Ticket</h3>
+    </div>
+
+    <div class="card-body">
+
+        @*TicketId*@
+        <div class="mb-3">
+            <label for="TicketId" class="form-label">TicketId:</label>
+            <InputNumber @bind-Value="ticket.TicketId" class="form-control" />
+        </div>
+
+        @*Fecha*@
+        <div class="mb-3">
+            <label for="Fecha" class="form-label">Fecha:</label>
+            <InputDate @bind-Value="ticket.Fecha" class="form-control" />
+        </div>
+
+        @*Prioridad*@
+        <div class="mb-3">
+            <label for="Prioridad" class="form-label">Prioridad:</label>
+            <InputSelect @bind-Value="ticket.Prioridad" class="form-control">
+                <option>Seleccione el nivel Prioridad</option>
+                <option>Alta</option>
+                <option>Media</option>
+                <option>Baja</option>
+            </InputSelect>
+        </div>
+        
+        @*Asunto*@
+        <div class="mb-3">
+            <label for="Asunto" class="form-label">Asunto:</label>
+            <InputText @bind-Value="ticket.Asunto" class="form-control" />
+        </div>
+        
+        @*Descripcion*@
+        <div class="mb-3">
+            <label for="Descripcion" class="form-label">Descripcion:</label>
+            <InputText @bind-Value="ticket.Descripcion" class="form-control" />
+        </div>
+        
+        @*TiempoInvertido*@
+        <div class="mb-3">
+            <label for="TiempoInvertido" class="form-label">TiempoInvertido:</label>
+            <InputNumber id="TiempoInvertido" @bind-Value="ticket.TiempoInvertido" step="0.1" class="form-control" />
+        </div>
+
+        @*TecnicoId*@
+        <div class="mb-3">
+            <label for="TecnicoId" class="form-label">TecnicoId:</label>
+            <InputSelect @bind-Value="ticket.TecnicoId" class="form-control">
+                <option value="">Seleccione un t&eacute;cnico</option>
+                @foreach (var tecnico in tecnicoId)
+                {
+                    <option value="@tecnico.TecnicoId">@tecnico.TecnicoId</option>
+                }
+            </InputSelect>
+        </div>
+        
+        @*ClienteId*@
+        <div class="mb-3">
+            <label for="ClienteId" class="form-label">ClienteId:</label>
+            <InputSelect @bind-Value="ticket.ClienteId" class="form-control">
+                <option value="">Seleccione un cliente</option>
+                @foreach (var cliente in clienteId)
+                {
+                    <option value="@cliente.TecnicoId">@cliente.ClienteId</option>
+                }
+            </InputSelect>
+        </div>
+
+    </div>
+
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int TicketId { get; set; }
+
+    public Tickets ticket { get; set; } = new Tickets();
+
+    public List<Tecnicos> tecnicoId { get; set; } = new List<Tecnicos>();
+
+    public List<Clientes> clienteId { get; set; } = new List<Clientes>();
+
+    public bool existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        tecnicoId = await tecnicoService.Listar(t => true);
+        clienteId = await clienteService.Listar(t => true);
+
+    }
+    public async Task Buscar()
+    {
+
+        existe = false;
+        var TicketEncontrado = await ticketService.Buscar(TicketId);
+        if (TicketEncontrado != null)
+        {
+            ticket = TicketEncontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task Nuevo()
+    {
+        ticket = new Tickets();
+
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaTickes = await ticketService.Listar(t => t.Prioridad.ToLower() == ticket.Prioridad.ToLower() && t.TicketId != ticket.TicketId);
+        existe = listaTickes.Any();
+        return !existe;
+    }
+
+    public async Task Retroceder()
+    {
+        navigationManager.NavigateTo("/Ticket/Index");
+    }
+
+    public async Task Guardar()
+    {
+        if (!await Validar())
+        {
+
+            return;
+        }
+
+        var resultado = await ticketService.Guardar(ticket);
+        if (resultado)
+        {
+
+            await Retroceder();
+        }
+
+    }
+
+}
