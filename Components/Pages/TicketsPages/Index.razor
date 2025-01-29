@@ -1,0 +1,120 @@
+﻿@page "/Ticket/Index"
+@inject TicketService ticketService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Tickets</PageTitle>
+
+<div class="card shadow">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Consulta de Tickets</h3>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="ID">TicketId</option>
+                <option value="Prioridad">Prioridad</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Ticket/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>TicketId</th>
+                <th>Fecha</th>
+                <th>Prioridad</th>
+                <th>Asunto</th>
+                <th>Descipcion</th>
+                <th>TiempoInvertido</th>
+                <th>Tecnico</th>
+                <th>Cliente</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var ticket in ListarTickets)
+            {
+                <tr>
+                    <td>@ticket.TicketId</td>
+                    <td>@ticket.Fecha.ToShortDateString()</td>
+                    <td>@ticket.Prioridad</td>
+                    <td>@ticket.Asunto</td>
+                    <td>@ticket.Descripcion</td>
+                    <td>@ticket.TiempoInvertido</td>
+                    <td>@ticket.TecnicoId</td>
+                    <td>@ticket.ClienteId - @ticket.clientes?.ClienteNombres</td>
+
+
+                    <td>
+                        <a href="/Ticket/Edit/@ticket.TicketId" class="btn btn-outline-success">
+                            <i class="bi bi-pencil-square fs-4"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/Ticket/Delete/@ticket.TicketId" class="btn btn-outline-danger">
+                            <i class="bi bi-trash-fill fs-4"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+    <div class="card-footer text-end">
+        <p>Total de Ticket:@ListarTickets.Count</p>
+    </div>
+</div>
+
+@code {
+
+    public Tickets ticket { get; set; } = new Tickets();
+    public List<Tickets> ListarTickets { get; set; } = new List<Tickets>();
+    public string filtro = "ID";
+    public string valorFiltro = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        ListarTickets = await ticketService.Listar(t => true);
+    }
+
+    public async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(valorFiltro))
+        {
+            ListarTickets = await ticketService.Listar(P => true);
+        }
+        else
+        {
+            if (filtro == "ID" && int.TryParse(valorFiltro, out int ticketId))
+            {
+                ListarTickets = await ticketService.Listar(c => c.TicketId == ticketId);
+            }
+            else if (filtro == "Prioridad")
+            {
+                ListarTickets = await ticketService.Listar(c => c.Prioridad.Contains(valorFiltro));
+            }
+
+        }
+    }
+
+}
