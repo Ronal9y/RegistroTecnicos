@@ -3,89 +3,88 @@ using RegistroTecnicos.DAL;
 using RegistroTecnicos.Models;
 using System.Linq.Expressions;
 
-namespace RegistroTecnicos.Services
+namespace RegistroTecnicos.Services;
+
+public class CiudadService(IDbContextFactory<Contexto> DbFactory)
 {
-    public class CiudadService(IDbContextFactory<Contexto> DbFactory)
+
+    private async Task<bool> Insertar(Ciudades ciudades)
     {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        contexto.Ciudades.Add(ciudades);
 
-        private async Task<bool> Insertar(Ciudades ciudades)
+        return await contexto.SaveChangesAsync() > 0;
+
+    }
+
+    private async Task<bool> Modificar(Ciudades ciudades)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        contexto.Update(ciudades);
+
+        return await contexto.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> Eliminar(int id)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        var EliminarCiudad = await contexto.Ciudades
+            .Where(t => t.CiudadId == id).ExecuteDeleteAsync();
+
+        return EliminarCiudad > 0;
+    }
+
+    public async Task<bool> Existe(int ciudadId)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        return await contexto.Ciudades.AnyAsync(t => t.CiudadId == ciudadId);
+    }
+
+    public async Task<bool> Guardar(Ciudades ciudades)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        if (!await Existe(ciudades.CiudadId))
         {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            contexto.Ciudades.Add(ciudades);
-
-            return await contexto.SaveChangesAsync() > 0;
-
+            return await Insertar(ciudades);
         }
-
-        private async Task<bool> Modificar(Ciudades ciudades)
+        else
         {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-
-            contexto.Update(ciudades);
-
-            return await contexto.SaveChangesAsync() > 0;
+            return await Modificar(ciudades);
         }
+    }
 
-        public async Task<bool> Eliminar(int id)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
+    public async Task<Ciudades?> Buscar(int id = 0, string? nombre = null)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Ciudades
+            .Where(t => t.CiudadId == id || t.NombreCiudad == nombre)
+            .FirstOrDefaultAsync();
+    }
 
-            var EliminarCiudad = await contexto.Ciudades
-                .Where(t => t.CiudadId == id).ExecuteDeleteAsync();
+    public async Task<bool> ExisteNombreCliente(string nombre, int id)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Ciudades.AnyAsync(c =>
+            (c.NombreCiudad == nombre) &&
+            c.CiudadId != id
+        );
+    }
 
-            return EliminarCiudad > 0;
-        }
+    public async Task<List<Ciudades>> Listar(Expression<Func<Ciudades, bool>> criterio)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
 
-        public async Task<bool> Existe(int ciudadId)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Ciudades.AsNoTracking().Where(criterio).ToListAsync();
 
-            return await contexto.Ciudades.AnyAsync(t => t.CiudadId == ciudadId);
-        }
+    }
 
-        public async Task<bool> Guardar(Ciudades ciudades)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-
-            if (!await Existe(ciudades.CiudadId))
-            {
-                return await Insertar(ciudades);
-            }
-            else
-            {
-                return await Modificar(ciudades);
-            }
-        }
-
-        public async Task<Ciudades?> Buscar(int id = 0, string? nombre = null)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Ciudades
-                .Where(t => t.CiudadId == id || t.NombreCiudad == nombre)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<bool> ExisteNombreCliente(string nombre, int id)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Ciudades.AnyAsync(c =>
-                (c.NombreCiudad == nombre) &&
-                c.CiudadId != id
-            );
-        }
-
-        public async Task<List<Ciudades>> Listar(Expression<Func<Ciudades, bool>> criterio)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-
-            return await contexto.Ciudades.AsNoTracking().Where(criterio).ToListAsync();
-
-        }
-
-        public async Task<List<Ciudades>> ListarCiudades()
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Ciudades.AsNoTracking().ToListAsync();
-        }
+    public async Task<List<Ciudades>> ListarCiudades()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Ciudades.AsNoTracking().ToListAsync();
     }
 }
