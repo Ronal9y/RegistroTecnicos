@@ -16,6 +16,8 @@ namespace RegistroTecnicos.DAL;
 
     public DbSet<Tickets> Tickets { get; set; }
 
+    public DbSet<Sistemas> Sistemas { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,6 +33,11 @@ namespace RegistroTecnicos.DAL;
             .WithMany()
             .HasForeignKey(t => t.ClienteId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Sistemas>().
+            Property(s => s.Descripcion)
+            .HasMaxLength(int.MaxValue)
+            .IsRequired(false);
     }
 
 }

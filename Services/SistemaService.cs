@@ -73,7 +73,12 @@ public class SistemaService(IDbContextFactory<Contexto> DbFactory)
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.Sistemas.AsNoTracking().Where(criterio).ToListAsync();
     }
-   
+    public async Task<List<Sistemas>> ListarSistemas()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Sistemas.AsNoTracking().ToListAsync();
+    }
+
     public async Task<bool> ExisteSistema(int id,string? descripcion)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
