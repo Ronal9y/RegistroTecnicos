@@ -1,0 +1,110 @@
+﻿@page "/Sistema/Create"
+@inject SistemaService sistemaService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="sistemas" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Modificar Sistema</h3>
+    </div>
+
+    <div class="card-body">
+
+        @*SistemaId*@
+        <div class="mb-3">
+            <label for="SistemaId" class="form-label">SistemaId:</label>
+            <InputNumber @bind-Value="sistemas.SistemaId" class="form-control" />
+        </div>
+
+        @*Descripcion*@
+        <div class="mb-3">
+            <label for="Descripcion" class="form-label">Descipcion:</label>
+            <InputText @bind-Value="sistemas.Descripcion" class="form-control" />
+            <ValidationMessage For="@(()=>sistemas.Descripcion)" />
+        </div>
+
+        @*Complejidad*@
+        <div class="mb-3">
+            <label for="Complejidad" class="form-label">Complejidad:</label>
+            <InputNumber @bind-Value="sistemas.Complejidad" step="0.1" class="form-control" />
+        </div>
+
+    </div>
+
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int SistemaId { get; set; }
+    public Sistemas sistemas { get; set; } = new Sistemas();
+    public bool existe = false;
+
+    public async Task Nuevo()
+    {
+
+        sistemas = new Sistemas();
+        existe = false;
+
+    }
+
+    public async Task Buscar() 
+    { 
+        existe = false;
+        var encontrado = await sistemaService.Buscar(sistemas.SistemaId);
+        if (encontrado != null)
+        {
+            sistemas = encontrado;
+        }
+        else 
+        { 
+
+            Nuevo();
+
+        }
+    }
+
+    public async Task<bool> Validar()
+    { 
+        existe = await sistemaService.ExisteSistema(sistemas.SistemaId, sistemas.Descripcion);
+        return existe;
+    }
+
+    public async Task Guardar()
+    {
+        if (await Validar())
+        {
+            await sistemaService.Guardar(sistemas);
+            return;
+        }
+        var guardado = await sistemaService.Guardar(sistemas);
+        if (guardado)
+        {
+            Nuevo();
+            Retroceder();
+        }
+    }
+
+    public async Task Retroceder()
+    {
+        navigationManager.NavigateTo("/Sistema/Index");
+    }
+
+    public async Task Eliminar()
+    {
+        var eliminado = await sistemaService.Eliminar(sistemas.SistemaId);
+        Nuevo();
+    }
+}

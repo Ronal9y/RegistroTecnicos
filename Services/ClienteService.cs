@@ -97,19 +97,4 @@ namespace RegistroTecnicos.Services;
         return await contexto.Clientes.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Clientes?> Buscar(string criterio)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        if (int.TryParse(criterio, out int id))
-        {
-            return await contexto.Clientes
-                .FirstOrDefaultAsync(c => c.ClienteId == id);
-        }
-
-        return await contexto.Clientes
-            .FirstOrDefaultAsync(c => c.Rnc == criterio || c.ClienteNombres.Contains(criterio));
-    }
-
 }
-

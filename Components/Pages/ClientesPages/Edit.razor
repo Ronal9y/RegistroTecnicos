@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-<EditForm Model="clientes" OninValidSubmit="Guardar">
+<EditForm Model="clientes" OnValidSubmit="Guardar">
     <DataAnnotationsValidator/>
 
     <div class="card-header bg-primary text-center text-white py-2 rounded">
@@ -88,10 +88,6 @@
 
     public bool existe = false;
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //    clientes = await clienteService.Buscar(ClienteId);
-    // }
     protected override async Task OnInitializedAsync()
     {
 
