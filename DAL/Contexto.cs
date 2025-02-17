@@ -38,6 +38,11 @@ namespace RegistroTecnicos.DAL;
             Property(s => s.Descripcion)
             .HasMaxLength(int.MaxValue)
             .IsRequired(false);
+        
+        modelBuilder.Entity<Tickets>().
+            Property(s => s.Descripcion)
+            .HasMaxLength(int.MaxValue)
+            .IsRequired(false);
     }
 
 }
