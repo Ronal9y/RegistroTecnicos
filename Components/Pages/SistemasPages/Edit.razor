@@ -1,5 +1,5 @@
 ﻿@page "/Sistema/Edit"
-@page "/Sistema/Edit/{SistemaId: int}"
+@page "/Sistema/Edit/{SistemaId:int}"
 @inject SistemaService sistemaService
 @using RegistroTecnicos.Models
 @using RegistroTecnicos.Services
@@ -54,6 +54,18 @@
     public Sistemas sistemas { get; set; } = new Sistemas();
     public bool existe = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (SistemaId > 0)
+        {
+            var encontrado = await sistemaService.Buscar(SistemaId);
+            if (encontrado != null)
+            {
+                sistemas = encontrado;
+            }
+        }
+    }
+
     public async Task Buscar()
     {
 
@@ -77,14 +89,15 @@
 
     public async Task<bool> Validar()
     {
-        var listaSistemas = await sistemaService.Listar(s => s.Descripcion.ToLower() == sistemas.Descripcion.ToLower() && s.SistemaId != sistemas.SistemaId);
+        var listaSistemas = await sistemaService.Listar(s => s.Descripcion.ToLower() == sistemas.Descripcion
+        .ToLower() && s.SistemaId != sistemas.SistemaId);
         existe = listaSistemas.Any();
         return !existe;
     }
 
     public async Task Retroceder()
     {
-        navigationManager.NavigateTo("/Sistemas/Index");
+        navigationManager.NavigateTo("/Sistema/Index");
     }
 
     public async Task Guardar()
@@ -92,6 +105,12 @@
         if (!await Validar())
         {
 
+            return;
+        }
+        var existeDescripcion = await sistemaService.Listar(s => s.Descripcion.ToLower() == sistemas.Descripcion
+        .ToLower() && s.SistemaId != sistemas.SistemaId);
+        if (existeDescripcion.Any())
+        {
             return;
         }
 
