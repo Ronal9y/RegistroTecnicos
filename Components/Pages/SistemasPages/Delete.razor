@@ -1,0 +1,86 @@
+﻿@page "/Sistema/Delete/{SistemaID :int}"
+@inject SistemaService sistemaService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar Sistema</PageTitle>
+
+<div class="container">
+    <div class="card shadow-header">
+        <div class=" bg-primary text-white text-center py-2 rounded">
+            <h3><strong>Eliminar Sistema</strong></h3>
+        </div>
+
+        <div class="card-header text-center">
+            <h3 class="text-danger">¿Est&aacute; seguro de eliminar este sistema?</h3>
+        </div>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow-lg">
+                        <div card-header>
+                            <h3 class="text-center"><strong>Datos del Sistema</strong></h3>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="border-primary border-2 borde">
+                                <div card-body>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <ul class="list-unstyled">
+                                                <li><strong>SistemaId:</strong>@sistemas.SistemaId</li>
+                                                <li><strong>Descripcion:</strong>@sistemas.Descripcion</li>
+                                                <li><strong>Complejidad:</strong>@sistemas.Complejidad</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-danger" @onclick="EliminarSistema"><i class="bi bi-trash-fill"></i>Eliminar</button>
+                <button type="button" class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i>Volver</button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int SistemaID { get; set; }
+    public Sistemas? sistemas { get; set; } = new Sistemas();
+    public bool existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SistemaID != 0)
+        {
+            sistemas = await sistemaService.Buscar(SistemaID);
+        }
+    }
+
+    public async Task EliminarSistema()
+    {
+        if (SistemaID == 0 || sistemas == null)
+        {
+            return;
+        }
+        if (await sistemaService.Eliminar(SistemaID))
+        {
+            Volver();
+        }
+    }
+
+    public async Task Volver()
+    { 
+        navigationManager.NavigateTo("/Sistema/Index");
+    }
+}

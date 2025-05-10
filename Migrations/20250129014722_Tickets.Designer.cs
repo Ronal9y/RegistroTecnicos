@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RegistroTecnicos.DAL;
 
@@ -11,9 +12,11 @@ using RegistroTecnicos.DAL;
 namespace RegistroTecnicos.Migrations
 {
     [DbContext(typeof(Contexto))]
-    partial class ContextoModelSnapshot : ModelSnapshot
+    [Migration("20250129014722_Tickets")]
+    partial class Tickets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,11 +134,14 @@ namespace RegistroTecnicos.Migrations
                     b.Property<decimal>("TiempoInvertido")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("clientesClienteId")
+                        .HasColumnType("int");
+
                     b.HasKey("TicketId");
 
-                    b.HasIndex("ClienteId");
-
                     b.HasIndex("TecnicoId");
+
+                    b.HasIndex("clientesClienteId");
 
                     b.ToTable("Tickets");
                 });
@@ -153,17 +159,15 @@ namespace RegistroTecnicos.Migrations
 
             modelBuilder.Entity("RegistroTecnicos.Models.Tickets", b =>
                 {
-                    b.HasOne("RegistroTecnicos.Models.Clientes", "clientes")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("RegistroTecnicos.Models.Tecnicos", "tecnico")
                         .WithMany()
                         .HasForeignKey("TecnicoId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("RegistroTecnicos.Models.Clientes", "clientes")
+                        .WithMany()
+                        .HasForeignKey("clientesClienteId");
 
                     b.Navigation("clientes");
 

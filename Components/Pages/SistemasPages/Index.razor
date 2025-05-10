@@ -1,0 +1,116 @@
+﻿@page "/Sistema/Index"
+@inject SistemaService sistemasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Sistemas</PageTitle>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Consulta de Sistemas</h3>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="ID">SistemaId</option>
+                <option value="Descripcion">Descripcion</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Sistema/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>SistemaId</th>
+                <th>Descripcion</th>
+                <th>Complejidad</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Listar != null && Listar.Count > 0)
+            {
+                @foreach (var sistema in Listar)
+                {
+                    <tr>
+                        <td>@sistema.SistemaId</td>
+                        <td>@sistema.Descripcion</td>
+                        <td>@sistema.Complejidad%</td>
+
+                        <td>
+                            <a href="/Ssstema/Edit/@sistema.SistemaId" class="btn btn-outline-success">
+                                <i class="bi bi-pencil-square fs-4"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/Sistema/Delete/@sistema.SistemaId" class="btn btn-outline-danger">
+                                <i class="bi bi-trash-fill fs-4"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5">No se encontraron resultados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="card-footer text-end">
+        <p>Total de Sistemas:@Listar.Count</p>
+    </div>
+</div>
+
+@code {
+    public List<Sistemas> Listar { get; set; } = new List<Sistemas>();
+    public string filtro { get; set; } = "ID";
+    public string valorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Listar = await sistemasService.Listar(s => true);
+    }
+
+    public async Task Buscar()
+    {
+        if (string.IsNullOrEmpty(valorFiltro))
+        {
+            Listar = await sistemasService.Listar(P => true);
+        }
+        else if (filtro == "ID" && int.TryParse(valorFiltro, out int sistemaId))
+        {
+            Listar = await sistemasService.Listar(s => s.SistemaId == sistemaId);
+        }
+        else if (filtro == "Descripcion")
+        {
+            Listar = await sistemasService.Listar(s => s.Descripcion.Contains(valorFiltro));
+        }
+    }
+
+    private async Task Restablecer()
+    { 
+        Listar = await sistemasService.Listar(s => s.SistemaId > 0);
+        filtro = string.Empty;
+        valorFiltro = string.Empty;
+    }
+}
